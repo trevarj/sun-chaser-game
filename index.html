@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover so the canvas reaches under rounded corners; the game
+         reads env(safe-area-inset-*) for HUD placement. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#10162b" />
+    <meta name="description" content="Sunchaser - ride the hills, outrun the night." />
+    <title>Sunchaser</title>
+    <link rel="manifest" href="/sun-chaser-game/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/sun-chaser-game/icons/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/sun-chaser-game/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/sun-chaser-game/icons/apple-touch-icon.png" />
+    <style>
+      /* The boot screen is inline, unminified and dependency-free so it paints
+         before a single byte of wasm arrives. */
+      :root {
+        --ink: #f4efe6;
+        --sky-top: #10162b;
+        --sky-bottom: #47305a;
+        --sun: #ffb46b;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+        background: var(--sky-top);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      #canvas-host { position: fixed; inset: 0; }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        /* The game owns every gesture on the play surface. The rest of the
+           document stays zoomable, which is deliberate: user-scalable=no is the
+           wrong tool and breaks text scaling for people who need it. */
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        outline: none;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        gap: 1.5rem;
+        text-align: center;
+        background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+        transition: opacity 420ms ease;
+        z-index: 10;
+      }
+      #boot[data-ready] { opacity: 0; pointer-events: none; }
+      #boot h1 {
+        font-size: clamp(1.75rem, 6vw, 3rem);
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      #boot .sun {
+        width: clamp(72px, 18vw, 132px);
+        aspect-ratio: 1;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--sun) 55%, rgba(255, 180, 107, 0) 72%);
+        animation: breathe 2.4s ease-in-out infinite;
+      }
+      @keyframes breathe {
+        0%, 100% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.06); opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot .sun { animation: none; }
+      }
+      #boot .bar {
+        width: min(60vw, 260px);
+        height: 3px;
+        margin: 0 auto;
+        border-radius: 999px;
+        background: rgba(244, 239, 230, 0.18);
+        overflow: hidden;
+      }
+      #boot .bar i {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: var(--ink);
+        transition: width 120ms linear;
+      }
+      #boot .status { font-size: 0.8rem; opacity: 0.6; letter-spacing: 0.08em; }
+      #boot .error { color: #ff9a8b; max-width: 34ch; line-height: 1.5; font-size: 0.85rem; }
+
+      /* Landscape-first. In portrait the playfield is letterboxed down to a
+         narrow band, so it is worth saying so rather than letting the player
+         assume the game is broken. Shown only when the window is genuinely
+         portrait, and never on a desktop window that merely happens to be tall. */
+      #rotate {
+        position: fixed;
+        inset: 0;
+        display: none;
+        place-content: center;
+        gap: 1rem;
+        text-align: center;
+        background: rgba(12, 16, 34, 0.86);
+        backdrop-filter: blur(6px);
+        z-index: 5;
+        font-size: 0.95rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate { display: grid; }
+      }
+      #rotate .phone {
+        width: 54px;
+        height: 92px;
+        margin: 0 auto;
+        border: 3px solid var(--ink);
+        border-radius: 10px;
+        opacity: 0.9;
+        animation: tip 2.6s ease-in-out infinite;
+      }
+      @keyframes tip {
+        0%, 45% { transform: rotate(0deg); }
+        60%, 100% { transform: rotate(-90deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #rotate .phone { animation: none; transform: rotate(-90deg); }
+      }
+
+      #update {
+        position: fixed;
+        left: 50%;
+        bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+        transform: translateX(-50%);
+        display: none;
+        gap: 0.75rem;
+        align-items: center;
+        padding: 0.6rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(12, 16, 34, 0.92);
+        color: var(--ink);
+        font-size: 0.8rem;
+        z-index: 6;
+      }
+      #update button {
+        font: inherit;
+        color: #10162b;
+        background: var(--ink);
+        border: 0;
+        border-radius: 999px;
+        padding: 0.35rem 0.8rem;
+        cursor: pointer;
+      }
+    </style>
+    <script type="module" crossorigin src="/sun-chaser-game/assets/index-D3Phhd2-.js"></script>
+  </head>
+  <body>
+    <div id="canvas-host">
+      <canvas id="sunchaser-canvas" tabindex="0"></canvas>
+    </div>
+
+    <div id="boot">
+      <div class="sun" aria-hidden="true"></div>
+      <h1>Sunchaser</h1>
+      <div class="bar"><i id="boot-bar"></i></div>
+      <p class="status" id="boot-status">loading</p>
+      <p class="error" id="boot-error" hidden></p>
+    </div>
+
+    <div id="rotate">
+      <div class="phone" aria-hidden="true"></div>
+      <p>Turn your device sideways</p>
+    </div>
+
+    <div id="update" role="status">
+      <span>A new version is ready.</span>
+      <button id="update-reload" type="button">Reload</button>
+    </div>
+
+  </body>
+</html>

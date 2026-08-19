@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sunchaser">
+  <!-- Maskable variant: the same composition pulled into the safe zone, since a
+       maskable icon can be cropped to a circle by the launcher and anything in
+       the outer 20% may simply not exist. -->
+  <defs>
+    <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f4f9e"/>
+      <stop offset="0.6" stop-color="#5f9ad6"/>
+      <stop offset="1" stop-color="#f0dcbe"/>
+    </linearGradient>
+    <radialGradient id="glow2" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd79a" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffd79a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky2)"/>
+  <circle cx="318" cy="186" r="120" fill="url(#glow2)"/>
+  <circle cx="318" cy="186" r="40" fill="#fff2d2"/>
+  <path d="M40 372 C 110 336, 190 366, 262 348 C 340 330, 410 352, 472 340 L472 472 L40 472 Z"
+        fill="#f2c47e"/>
+  <path d="M40 404 C 110 368, 190 398, 262 380 C 340 362, 410 384, 472 372 L472 472 L40 472 Z"
+        fill="#d99a52"/>
+  <g transform="translate(208 336) rotate(-16)">
+    <ellipse cx="0" cy="0" rx="34" ry="28" fill="#241f33"/>
+    <ellipse cx="20" cy="-14" rx="16" ry="15" fill="#241f33"/>
+    <ellipse cx="-31" cy="3" rx="14" ry="9" fill="#241f33"/>
+    <circle cx="25" cy="-17" r="4" fill="#fff2d2"/>
+  </g>
+</svg>

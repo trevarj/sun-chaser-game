@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sunchaser">
+  <!-- The app icon is the game's own composition: a low sun, a banded hill and
+       the flier. Drawn as vector so every size is generated from one source and
+       none of them can drift out of sync with the others. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f4f9e"/>
+      <stop offset="0.55" stop-color="#5f9ad6"/>
+      <stop offset="1" stop-color="#f0dcbe"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd79a" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffd79a" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="frame"><rect width="512" height="512" rx="96"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="512" height="512" fill="url(#sky)"/>
+    <circle cx="340" cy="150" r="150" fill="url(#glow)"/>
+    <circle cx="340" cy="150" r="52" fill="#fff2d2"/>
+
+    <!-- Distant ridge -->
+    <path d="M-20 322 C 90 288, 180 318, 268 300 C 360 282, 450 306, 532 292 L532 532 L-20 532 Z"
+          fill="#c9bda6" opacity="0.75"/>
+
+    <!-- Foreground hill, with the strata the game draws in its terrain shader -->
+    <path d="M-20 392 C 80 340, 190 378, 286 356 C 392 332, 470 366, 532 350 L532 532 L-20 532 Z"
+          fill="#f2c47e"/>
+    <path d="M-20 432 C 80 380, 190 418, 286 396 C 392 372, 470 406, 532 390 L532 532 L-20 532 Z"
+          fill="#e0a25a"/>
+    <path d="M-20 472 C 80 420, 190 458, 286 436 C 392 412, 470 446, 532 430 L532 532 L-20 532 Z"
+          fill="#c47e42"/>
+
+    <!-- The flier -->
+    <g transform="translate(196 330) rotate(-16)">
+      <ellipse cx="0" cy="0" rx="42" ry="35" fill="#241f33"/>
+      <ellipse cx="25" cy="-17" rx="20" ry="19" fill="#241f33"/>
+      <ellipse cx="-38" cy="4" rx="17" ry="11" fill="#241f33"/>
+      <circle cx="31" cy="-21" r="5" fill="#fff2d2"/>
+    </g>
+  </g>
+</svg>
